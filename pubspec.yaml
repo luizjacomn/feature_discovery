@@ -16,7 +16,6 @@ dependencies:
     sdk: flutter
 
   provider: ^4.0.4
-  shared_preferences: ^0.5.6+1
 
 dev_dependencies:
   flutter_test:

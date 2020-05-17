@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import '../step.dart';
 
 class BlocProvider extends StatelessWidget {
   final Widget child;
@@ -43,12 +44,12 @@ class Bloc {
   Sink<EventType> get _eventsIn => _eventsController.sink;
 
   /// The steps consist of the feature ids of the features to be discovered.
-  Iterable<String> _steps;
+  Iterable<Step> _steps;
 
   int _activeStepIndex;
 
   String get activeFeatureId =>
-      _activeStepIndex == null ? null : _steps?.elementAt(_activeStepIndex);
+      _activeStepIndex == null ? null : _steps.elementAt(_activeStepIndex).id;
 
   /// This is used to determine if the active feature is already shown by
   /// another [DescribedFeatureOverlay] as [DescribedFeatureOverlay.allowShowingDuplicate]
@@ -85,10 +86,8 @@ class Bloc {
   void discoverFeatures(Iterable<String> steps) async {
     assert(steps != null && steps.isNotEmpty,
         'You need to pass at least one step to [FeatureDiscovery.discoverFeatures].');
-    final isAllStepCompleted = await _isAllStepCompleted(steps);
-    if (isAllStepCompleted) return;
 
-    _steps = steps;
+    _steps = steps.map((step) => Step(id: step));
     _activeStepIndex = 0;
     _activeOverlays = 0;
 
@@ -134,29 +133,14 @@ class Bloc {
   }
 
   Future<void> _setCurrentStepComplete() async =>
-      await (await SharedPreferences.getInstance())
-          .setBool(activeFeatureId, true);
+      _steps.firstWhere((step) => step.id == activeFeatureId).completed = true;
 
   Future<bool> _isCurrentStepCompleted() async =>
-      await (await SharedPreferences.getInstance()).getBool(activeFeatureId) ??
+      _steps.firstWhere((step) => step.id == activeFeatureId).completed ??
       false;
 
-  Future<bool> _isAllStepCompleted(Iterable<String> steps) async {
-    final pref = await SharedPreferences.getInstance();
-    var isCompleted = true;
-    steps.forEach((step) {
-      final isShowed = (pref.getBool(step) ?? false);
-      isCompleted = isCompleted && isShowed;
-    });
-    return isCompleted;
-  }
-
   Future<void> clearPreferences(Iterable<String> steps) async {
-    final pref = await SharedPreferences.getInstance();
-
-    steps.forEach((step) {
-      pref.setBool(step, null);
-    });
+    steps = [];
   }
 }
 
