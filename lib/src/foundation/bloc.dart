@@ -83,13 +83,17 @@ class Bloc {
     _eventsController.close();
   }
 
-  void discoverFeatures(Iterable<String> steps) async {
+  VoidCallback onDismiss;
+
+  void discoverFeatures(Iterable<String> steps,
+      [VoidCallback onDismiss]) async {
     assert(steps != null && steps.isNotEmpty,
         'You need to pass at least one step to [FeatureDiscovery.discoverFeatures].');
 
     _steps = steps.map((step) => Step(id: step));
     _activeStepIndex = 0;
     _activeOverlays = 0;
+    this.onDismiss = onDismiss;
 
     if (await _isCurrentStepCompleted()) {
       await _nextStep();
@@ -122,9 +126,16 @@ class Bloc {
     // The last step has been completed, so we need to clear the steps.
     _steps = null;
     _activeStepIndex = null;
+    if (onDismiss != null) {
+      onDismiss();
+    }
   }
 
   void dismiss() {
+    if (onDismiss != null) {
+      onDismiss();
+    }
+
     _eventsIn.add(EventType.dismiss);
 
     _steps = null;

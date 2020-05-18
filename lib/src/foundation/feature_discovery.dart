@@ -28,17 +28,17 @@ class FeatureDiscovery extends StatelessWidget {
   /// Steps are the featureIds of the overlays.
   /// Though they can be placed in any [Iterable], it is recommended to pass them as a [Set]
   /// because this ensures that every step is only shown once.
-  static void discoverFeatures(BuildContext context, Iterable<String> steps) =>
-      _blocOf(context).discoverFeatures(steps.toList());
+  static void discoverFeatures(BuildContext context, Iterable<String> steps,
+          {VoidCallback onDismiss}) =>
+      _blocOf(context).discoverFeatures(steps.toList(), onDismiss);
 
   /// This will schedule completion of the current discovery step and continue
   /// onto the step after the completion animation of the current overlay if successful.
   static Future<void> completeCurrentStep(BuildContext context) async =>
       _blocOf(context).completeStep();
 
-
-
-  static Future<void> clearPreferences(BuildContext context,Iterable<String> steps)  =>
+  static Future<void> clearPreferences(
+          BuildContext context, Iterable<String> steps) =>
       _blocOf(context).clearPreferences(steps);
 
   /// A method to dismiss all steps.
@@ -47,9 +47,6 @@ class FeatureDiscovery extends StatelessWidget {
   /// If you want to complete the current step and continue the feature discovery,
   /// call [completeCurrentStep] instead.
   static void dismissAll(BuildContext context) => _blocOf(context).dismiss();
-
-  @Deprecated('Use [dismissAll] instead.')
-  static void dismiss(BuildContext context) => dismissAll(context);
 
   /// This returns the feature id of the current feature discovery step, i.e.
   /// of the [DescribedFeatureOverlay] that is currently supposed to be shown, or `null`.
